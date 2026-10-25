@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Swagger UI - RequestTrackerApp</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css" />
+  <style>
+    body { margin: 0; background: #fafafa; font-family: sans-serif; }
+    .topbar { background-color: #1b1b1b; padding: 10px 20px; display: flex; align-items: center; }
+    .topbar h2 { color: #fff; margin: 0; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h2>RequestTrackerApp v1 - ASP.NET Core Web API</h2>
+  </div>
+  <div id="swagger-ui"></div>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = () => {
+      SwaggerUIBundle({
+        dom_id: '#swagger-ui',
+        spec: {
+          openapi: "3.0.1",
+          info: {
+            title: "RequestTrackerApp API",
+            description: "Система учета заявок пользователей (Service Desk API)",
+            version: "v1"
+          },
+          paths: {
+            "/api/Requests": {
+              get: {
+                tags: ["Requests"],
+                summary: "Получить все заявки",
+                responses: { "200": { description: "Success" } }
+              },
+              post: {
+                tags: ["Requests"],
+                summary: "Создать заявку",
+                responses: { "201": { description: "Created" }, "400": { description: "Bad Request" } }
+              }
+            },
+            "/api/Requests/{id}": {
+              get: {
+                tags: ["Requests"],
+                summary: "Получить заявку по ID",
+                parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+                responses: { "200": { description: "Success" }, "404": { description: "Not Found" } }
+              },
+              put: {
+                tags: ["Requests"],
+                summary: "Обновить заявку",
+                parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+                responses: { "204": { description: "No Content" }, "404": { description: "Not Found" } }
+              },
+              delete: {
+                tags: ["Requests"],
+                summary: "Удалить заявку",
+                parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+                responses: { "204": { description: "No Content" }, "404": { description: "Not Found" } }
+              }
+            },
+            "/api/Requests/{id}/status": {
+              put: {
+                tags: ["Requests"],
+                summary: "Изменить статус заявки",
+                parameters: [{ name: "id", in: "path", required: true, schema: { type: "string", format: "uuid" } }],
+                responses: { "204": { description: "No Content" }, "404": { description: "Not Found" } }
+              }
+            }
+          }
+        }
+      });
+    };
+  </script>
+</body>
+</html>

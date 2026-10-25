@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Система учета заявок пользователей</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; margin: 0; padding: 25px; color: #333; }
+    .container { max-width: 950px; margin: 0 auto; background: #fff; padding: 25px 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+    h1 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; font-size: 22px; }
+    h2 { font-size: 16px; color: #34495e; margin-top: 25px; }
+    .form-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: #555; }
+    input, select, textarea { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; font-size: 13px; }
+    textarea { resize: vertical; height: 60px; }
+    button.btn-submit { background: #27ae60; color: #fff; border: none; padding: 10px 18px; font-size: 14px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    button.btn-submit:hover { background: #219150; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { border: 1px solid #e1e8ed; padding: 10px 12px; text-align: left; }
+    th { background: #f8fafc; font-weight: 600; color: #475569; }
+    tr:hover { background: #f8fafc; }
+    .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+    .badge-new { background: #e0f2fe; color: #0369a1; }
+    .badge-in-progress { background: #fef3c7; color: #b45309; }
+    .badge-completed { background: #dcfce7; color: #15803d; }
+    .btn-action { padding: 4px 8px; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; margin-right: 4px; }
+    .btn-work { background: #f59e0b; color: white; }
+    .btn-done { background: #10b981; color: white; }
+    .btn-del { background: #ef4444; color: white; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Система учета заявок пользователей (Service Desk)</h1>
+
+  <h2>Форма регистрации обращения</h2>
+  <form id="reqForm">
+    <div class="form-group">
+      <div>
+        <label>Тема обращения</label>
+        <input type="text" id="title" placeholder="Например: Не работает принтер" required>
+      </div>
+      <div>
+        <label>ФИО заявителя (автор)</label>
+        <input type="text" id="author" placeholder="Например: Новиков Г.С." required>
+      </div>
+    </div>
+    <div class="form-group">
+      <div>
+        <label>Приоритет</label>
+        <select id="priority">
+          <option value="Normal">Обычный (Normal)</option>
+          <option value="High">Высокий (High)</option>
+          <option value="Critical">Критический (Critical)</option>
+        </select>
+      </div>
+      <div>
+        <label>Описание проблемы</label>
+        <textarea id="desc" placeholder="Подробное описание проблемы..."></textarea>
+      </div>
+    </div>
+    <button type="submit" class="btn-submit">Зарегистрировать заявку</button>
+  </form>
+
+  <h2>Список заявок в системе</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Тема</th>
+        <th>Автор</th>
+        <th>Приоритет</th>
+        <th>Статус</th>
+        <th>Дата регистрации</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<script>
+  let requests = [
+    { id: '1', title: 'Сбой авторизации в корпоративной сети', author: 'Новиков Г.С.', priority: 'High', status: 0, date: '25.10.2026 13:47' }
+  ];
+
+  function renderTable() {
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    requests.forEach(r => {
+      let badge = '';
+      if(r.status === 0) badge = '<span class="badge badge-new">Новая</span>';
+      else if(r.status === 1) badge = '<span class="badge badge-in-progress">В работе</span>';
+      else if(r.status === 2) badge = '<span class="badge badge-completed">Завершена</span>';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${r.title}</strong></td>
+        <td>${r.author}</td>
+        <td>${r.priority}</td>
+        <td>${badge}</td>
+        <td>${r.date}</td>
+        <td>
+          <button class="btn-action btn-work" onclick="setStatus('${r.id}', 1)">В работу</button>
+          <button class="btn-action btn-done" onclick="setStatus('${r.id}', 2)">Закрыть</button>
+          <button class="btn-action btn-del" onclick="delReq('${r.id}')">Удалить</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function setStatus(id, newStatus) {
+    const item = requests.find(x => x.id === id);
+    if(item) { item.status = newStatus; renderTable(); }
+  }
+
+  function delReq(id) {
+    requests = requests.filter(x => x.id !== id);
+    renderTable();
+  }
+
+  document.getElementById('reqForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const newReq = {
+      id: Date.now().toString(),
+      title: document.getElementById('title').value,
+      author: document.getElementById('author').value,
+      priority: document.getElementById('priority').value,
+      status: 0,
+      date: new Date().toLocaleString('ru-RU')
+    };
+    requests.push(newReq);
+    renderTable();
+    this.reset();
+  });
+
+  renderTable();
+</script>
+</body>
+</html>
